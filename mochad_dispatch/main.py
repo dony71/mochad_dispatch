@@ -82,7 +82,9 @@ class MqttDispatcher:
         # Distinguish between status messages (security) and
         # button presses per Andy Stanford-Clark's suggestion at
         # https://groups.google.com/d/msg/mqtt/rIp1uJsT9Nk/7YOWNCQO3ZEJ
-        if kind == 'button':
+        if kind == 'radio':
+            qos, retain = 0, False
+        elif kind == 'powerline':
             qos, retain = 0, False
         else:
             qos, retain = 1, True
@@ -153,7 +155,7 @@ class MochadClient:
             house_code = line_list[5];
             house_func = line_list[7]
 
-            return house_code, {'func': house_func}, 'button'
+            return house_code, {'func': house_func}, 'radio'
 
         elif line[15:20] == 'Rx PL':
             
