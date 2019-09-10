@@ -149,6 +149,20 @@ class MochadClient:
 
             return addr, {'func': func_dict}, 'security'
 
+         elif line[15:23] == 'Tx RFSEC':
+
+            # decode send RFSEC message. format is either:
+            #   09/22 15:39:07 Tx RFSEC Addr: 21:26:80 Func: Contact_alert_min_DS10A
+            #     ~ or ~
+            #   09/22 15:39:07 Tx RFSEC Addr: 0x80 Func: Motion_alert_SP554A
+            line_list = line.split(' ')
+            addr = line_list[5]
+            func = line_list[7]
+
+            func_dict = self.decode_func(func)
+
+            return addr, {'func': func_dict}, 'trigger'
+
         elif line[15:20] == 'Rx RF':
 
             # decode receive RF message. format is:
@@ -177,7 +191,7 @@ class MochadClient:
         
         elif line[15:20] == 'Tx PL':
             
-            # decode transmit RF/PL message. format is:
+            # decode send RF/PL message. format is:
             #   02/13 23:54:28 Tx PL HouseUnit: A1
             #   02/13 23:54:28 Tx PL House: A Func: On
             line_list = line.split(' ')
