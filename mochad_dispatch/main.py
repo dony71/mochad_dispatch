@@ -82,7 +82,9 @@ class MqttDispatcher:
         # Distinguish between status messages (security) and
         # button presses per Andy Stanford-Clark's suggestion at
         # https://groups.google.com/d/msg/mqtt/rIp1uJsT9Nk/7YOWNCQO3ZEJ
-        if kind == 'radio':
+        if kind == 'button':
+            qos, retain = 0, False
+        elif kind == 'radio':
             qos, retain = 0, False
         elif kind == 'powerline':
             qos, retain = 0, False
@@ -135,7 +137,7 @@ class MochadClient:
         # bail out unless it's an incoming RFSEC message
         if line[15:23] == 'Rx RFSEC':
 
-            # decode message. format is either:
+            # decode receive RFSEC message. format is either:
             #   09/22 15:39:07 Rx RFSEC Addr: 21:26:80 Func: Contact_alert_min_DS10A
             #     ~ or ~
             #   09/22 15:39:07 Rx RFSEC Addr: 0x80 Func: Motion_alert_SP554A
@@ -149,7 +151,7 @@ class MochadClient:
 
         elif line[15:20] == 'Rx RF':
 
-            # decode RF message. format is:
+            # decode receive RF message. format is:
             #   02/13 23:54:28 Rx RF HouseUnit: B1 Func: On
             line_list = line.split(' ')
             house_code = line_list[5];
@@ -159,7 +161,7 @@ class MochadClient:
 
         elif line[15:20] == 'Rx PL':
             
-            # decode PL message. format is:
+            # decode receive PL message. format is:
             #   02/13 23:54:28 Rx PL HouseUnit: A1
             #   02/13 23:54:28 Rx PL House: A Func: On
             line_list = line.split(' ')
@@ -172,6 +174,22 @@ class MochadClient:
                 with open ('/root/.house_code', 'rb') as f:
                     house_code = pickle.load(f)
             return house_code, {'func': house_func}, 'powerline'
+        
+        elif line[15:20] == 'Tx PL':
+            
+            # decode transmit RF/PL message. format is:
+            #   02/13 23:54:28 Tx PL HouseUnit: A1
+            #   02/13 23:54:28 Tx PL House: A Func: On
+            line_list = line.split(' ')
+            if line[21:27] == 'HouseU':
+                house_code = line_list[5]
+                with open ('/root/.house_code', 'wb') as f:
+                    pickle.dump(house_code, f)
+            else:
+                house_func = line_list[7]
+                with open ('/root/.house_code', 'rb') as f:
+                    house_code = pickle.load(f)
+            return house_code, {'func': house_func}, 'button'
         
         return '', ''
 
