@@ -154,6 +154,22 @@ class MochadClient:
 
             return house_code, {'func': house_func}, 'button'
 
+        elif line[15:20] == 'Rx PL':
+            
+            # decode PL message. format is:
+            #   02/13 23:54:28 Rx PL HouseUnit: A1
+            #   02/13 23:54:28 Rx PL House: A Func: On
+            line_list = line.split(' ')
+            if line[21:27] == 'HouseU':
+                house_code = line_list[5]
+                with open ('/root/.house_code', 'wb') as f:
+                    pickle.dump(house_code, f)
+            else:
+                house_func = line_list[7]
+                with open ('/root/.house_code', 'rb') as f:
+                    house_code = pickle.load(f)
+            return house_code, {'func': house_func}, 'powerline'
+        
         return '', ''
 
 
