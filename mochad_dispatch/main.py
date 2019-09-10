@@ -11,6 +11,7 @@ import argparse
 import urllib.parse
 import paho.mqtt.client as mqtt
 import json
+import pickle
 
 
 class MqttDispatcher:
